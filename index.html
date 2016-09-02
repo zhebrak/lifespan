@@ -1,0 +1,147 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>life span</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+        <script>
+            $(function() {
+                var loaderURL = 'https://zhebrak.io/loader/';
+
+                var countrySelector = $('#country');
+                var ageSelector = $('#age');
+                var sexSelector = $('#sex');
+
+                $.getJSON(loaderURL + '?loader_url=http://api.population.io:80/1.0/countries/', function(data) {
+                    data['countries'].sort()
+                    $.each(data['countries'], function(idx, country) {
+                        countrySelector.append('<option value="' + country +'">' + country +'</option>')
+                    });
+                });
+
+                $('#age, #sex, #country').on('change', function() {
+                    getLifeSpan();
+                });
+
+                $('.life-form').on('submit', function() {
+                    getLifeSpan();
+                    return false;
+                });
+
+                function getLifeSpan() {
+                    if (ageSelector.val() && countrySelector.val() && sexSelector.val()) {
+                        var apiURL = 'http://api.population.io:80/1.0/life-expectancy/remaining'
+                        var params = [
+                            apiURL, sexSelector.val(), countrySelector.val(),
+                            moment().format('YYYY-MM-DD'), ageSelector.val() + 'y'
+                        ]
+                        $.getJSON(loaderURL + '?loader_url=' + params.join('/'), function(data) {
+                            var age = parseInt(ageSelector.val())
+                            var progress =  age / (data['remaining_life_expectancy'] + age);
+                            $('.lifespan .life-progress').css('width', progress * 100 + '%');
+                            $('.life-disclaimer').css('display', 'block');
+                        });
+                    }
+                }
+            });
+        </script>
+
+        <style>
+            body {
+                text-align: center;
+            }
+
+            .life-form {
+                margin: auto;
+                width: 30%;
+                max-width: 400px;
+                min-width: 220px;
+                height: 200px;
+                margin-top: 50px;
+            }
+
+            .life-form .row {
+                height: 50px;
+            }
+
+            #age, #country, #sex {
+                height: 100%;
+                font-size: 24px;
+                padding: 5px;
+            }
+
+            .lifespan {
+                width: 80%;
+                margin-left: 10%;
+                height: 60px;
+                background-color: #7ae7c7;
+            }
+
+            .lifespan .life-progress {
+                width: 0%;
+                height: 100%;
+                background-color: #fff689;
+
+                -webkit-transition: width 1.5s ease-in-out;
+                -moz-transition: width 1.5s ease-in-out;
+                -o-transition: width 1.5s ease-in-out;
+                transition: width 1.5s ease-in-out;
+            }
+
+            .disclaimer-container {
+                width: 90%;
+                font-size: 12px;
+                height: 50px;
+                margin-top: 30px;
+            }
+
+            .life-disclaimer {
+                float: right;
+                color: #777;
+                display: none;
+            }
+
+            .lifespan-github {
+                font-size: 12px;
+                color: #777;
+                position: absolute;
+                bottom: 10px;
+                text-decoration: none;
+            }
+
+        </style>
+    </head>
+    <body>
+        <h1>life span</h1>
+        <form class="life-form">
+            <div class="row">
+                <div class="six columns">
+                    <input class="u-full-width" placeholder="Age" id="age">
+                </div>
+                <div class="six columns">
+                    <select class="u-full-width" id="sex">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <div class="twelve columns">
+                    <select class="u-full-width" id="country">
+                        <option value="">Country</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+        <div class="lifespan"><div class="life-progress"></div></div>
+        <div class="disclaimer-container">
+            <p class="life-disclaimer">according to life expectancy data provided by api.population.io</p>
+        </div>
+
+
+        <a class="lifespan-github" target="_blank" href="https://github.com/zhebrak/lifespan">github</a>
+    </body>
+</html>
